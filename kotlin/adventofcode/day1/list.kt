@@ -1,4 +1,4 @@
-package day1
+package adventofcode.day1
 
 
 fun main(args: Array<String>) {

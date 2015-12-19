@@ -1,10 +1,10 @@
-package day5
+package adventofcode.day5
 
 import java.io.File
 
 fun main(args: Array<String>) {
 
-    val file = File("/Users/jmfayard/Dev/perso/AdventOfCode/kotlin/day5/strings.txt")
+    val file = File("/Users/jmfayard/Dev/perso/AdventOfCode/kotlin/adventofcode/day5/strings.txt")
     var nice = 0
     var naugty = 0
     file.forEachLine { line ->

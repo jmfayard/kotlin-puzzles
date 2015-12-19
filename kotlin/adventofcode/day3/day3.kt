@@ -1,4 +1,4 @@
-package day3
+package adventofcode.day3
 
 fun main(args: Array<String>) {
     var current = House(0, 0)

@@ -1,4 +1,4 @@
-package day4
+package adventofcode.day4
 
 import java.security.MessageDigest
 
