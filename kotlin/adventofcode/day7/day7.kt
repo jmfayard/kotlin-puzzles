@@ -1,5 +1,6 @@
 package adventofcode.day7
 
+import sun.tools.java.CompilerError
 import java.io.File
 import java.util.*
 import kotlin.text.Regex
@@ -21,55 +22,125 @@ fun main(args: Array<String>) {
     }
     println("\n== Lexer ==")
     println(instructions.joinToString(separator = "\n"))
-    val errors = validateInstructions(instructions)
+    val lex_errors = validateInstructions(instructions)
+
     println("\n== Lexer Validation ==")
-    if (errors.isEmpty()) println("No error found")
-    else println(errors.joinToString(separator = "\n"))
+    if (lex_errors.isEmpty()) println("No error found")
+    else {
+        println(lex_errors.joinToString(separator = "\n"))
+        return
+    }
 
     println("\n== Parser ==")
-    println(buildCircuit(instructions).joinToString(separator = "\n"))
+    val circuit = Circuit(instructions)
+    println(circuit.list.joinToString(separator = "\n"))
 
-}
-
-val circuit = object : Map<String, BitInstruction> by HashMap<String, BitInstruction>() {
-
-}
-
-fun buildCircuit(instructions: List<List<Lex>>): List<BitInstruction> {
-    val result = instructions.map { instruction ->
-        val last = instruction[instruction.lastIndex] as LexVariable
-        if (instruction.size == 3) { // leaf
-            val token = instruction[0] as LexExpression
-            BitInstruction(
-                    first = token,
-                    second = null,
-                    operator = null,
-                    key = last.name)
-
-        } else if (instruction.size == 4) {
-            val token = instruction[1] as LexExpression
-            BitInstruction(
-                    first = token,
-                    second = null,
-                    operator = LexGate.NOT,
-                    key = last.name)
-        } else {
-            val operator = instruction[1] as LexGate
-            val firstToken = instruction[0] as LexExpression
-            val secondToken = instruction[2] as LexExpression
-            BitInstruction(
-                    first = firstToken,
-                    second = secondToken,
-                    operator = operator,
-                    key = last.name)
-        }
+    println("\n== Parser Validation ==")
+    var errors: List<ParserError>
+    errors = circuit.searchDuplicates()
+    if (errors.isNotEmpty()) {
+        println(errors.joinToString(separator = "\n"))
+        return
     }
-    return result
+    errors = circuit.sortAcyclicGraph()
+    if (errors.isNotEmpty()) {
+        println(errors.joinToString(separator = "\n"))
+        return
+    }
+
+    println("\n== Result ==")
+    println(circuit.list.joinToString(separator = "\n"))
+
 }
 
-fun validateAndSortCircuit() {
+class Circuit {
+    val list : List<BitOperation>
+    val map  : Map<String, BitOperation>
+    val keys : List<String>
+
+    constructor(instructionsList: List<List<Lex>>) {
+        list = instructionsList.map { instructions ->
+            val last = instructions.last() as LexVariable
+            if (instructions.size == 3) { // leaf
+                val token = instructions[0] as LexExpression
+                BitOperation(
+                        first = token,
+                        second = null,
+                        operator = null,
+                        key = last.name)
+
+            } else if (instructions.size == 4) {
+                val token = instructions[1] as LexExpression
+                BitOperation(
+                        first = token,
+                        second = null,
+                        operator = LexGate.NOT,
+                        key = last.name)
+            } else {
+                val operator = instructions[1] as LexGate
+                val firstToken = instructions[0] as LexExpression
+                val secondToken = instructions[2] as LexExpression
+                BitOperation(
+                        first = firstToken,
+                        second = secondToken,
+                        operator = operator,
+                        key = last.name)
+            }
+        }
+
+        keys = list.map { it.key }
+        map = list.toMapBy { it.key }
+    }
+
+    fun searchDuplicates() : List<ParserError> = list
+            .groupBy { it.key }
+            .filter { entry -> entry.value.size != 1 }
+            .map { entry ->
+                ParserError("Duplicate assignment for variable=${entry.key}")
+            }
+
+    fun sortAcyclicGraph() : List<ParserError> {
+        var sorted = 0
+        val errors = ArrayList<ParserError>()
+
+
+        // DEPTH-FIRST
+        while (sorted < list.size) {
+            val previouslySorted = sorted
+
+            list.forEach { operation ->
+
+                // Skip if dependancy not satisfied
+                val deps: List<BitOperation?> = operation.dependancies().map { map[it] }
+                if (operation.alreadyOrdered()) {
+                    // nothing to do
+                    return@forEach
+                } else if (deps.all { it?.alreadyOrdered() == true }) {
+                        operation.order = sorted
+                        sorted++
+
+                } else if (deps.any { it == null }) {
+                    errors.add(ParserError("Unsatisfied depdancy for operation=$operation"))
+
+                } else {
+                    // dependancy not satisfied yet, hopefully in the next while()
+                    return@forEach
+                }
+            }
+
+            if (sorted == previouslySorted) {
+                errors.add(ParserError("Acyclic graph, size=${list.size} sorted=${previouslySorted}"))
+                return errors
+
+            }
+        }
+        return errors
+    }
 
 }
+
+data class ParserError(val message: String)
+
 
 fun Lex.tokenName(): String =
     if (this is LexVariable) name
@@ -80,7 +151,7 @@ fun Lex.tokenValue(): Int? =
     if (this is LexValue) value
     else null
 
-class BitInstruction(val key : String, val value: Int? = null, val operator: LexGate?, val first: LexExpression?, val second : LexExpression?) {
+class BitOperation(val key : String, var value: Int? = null, val operator: LexGate?, val first: LexExpression?, val second : LexExpression?, var order : Int = -1) {
     fun isComputed() : Boolean = (value != null)
     fun dependancies(): List<String> {
         val result = ArrayList<String>()
@@ -91,7 +162,9 @@ class BitInstruction(val key : String, val value: Int? = null, val operator: Lex
         return result
     }
 
-    override fun toString(): String = "BitInstruction( key=$key, value=$value, depandancies=${dependancies()} operator=$operator first=$first second=$second"
+    override fun toString(): String = "BitInstruction( key=$key, value=$value, depandancies=${dependancies()} operator=$operator first=$first second=$second order=${order}"
+
+    fun alreadyOrdered(): Boolean = (order != -1)
 }
 
 
@@ -110,7 +183,7 @@ fun validateInstructions(instructions: List<List<Lex>>) : List<TokenError> {
         val second = instruction[1]
         val third = instruction[2]
 
-        if (! (instruction[instruction.lastIndex] is LexVariable) && instruction[instruction.lastIndex-1] is LexAssignment)
+        if (! (instruction.last() is LexVariable) && instruction[instruction.lastIndex-1] is LexAssignment)
             errorMessage = "Missing asignment"
         else
             errorMessage = when(instruction.size) {
