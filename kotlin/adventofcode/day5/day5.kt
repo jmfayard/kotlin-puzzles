@@ -4,7 +4,7 @@ import java.io.File
 
 fun main(args: Array<String>) {
 
-    val file = File("/Users/jmfayard/Dev/perso/AdventOfCode/kotlin/adventofcode/day5/strings.txt")
+    val file = File("kotlin/adventofcode/day5/strings.txt")
     var nice = 0
     var naugty = 0
     file.forEachLine { line ->

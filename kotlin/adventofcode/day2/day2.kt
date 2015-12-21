@@ -7,7 +7,7 @@ import kotlin.text.MatchGroupCollection
 import kotlin.text.Regex
 
 fun main(args: Array<String>) {
-    val input = File("/Users/jmfayard/Dev/perso/AdventOfCode/kotlin/adventofcode/day2/presents.txt")
+    val input = File("kotlin/adventofcode/day2/presents.txt")
     val presents = ArrayList<Present>()
 
     val regexp = Regex(pattern = "(\\d+)x(\\d+)x(\\d+)")

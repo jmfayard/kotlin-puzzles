@@ -65,10 +65,13 @@ import kotlin.text.Regex
 fun main(args: Array<String>) {
     val instructions = ArrayList<List<Lex>>()
     val testing = false
-    val file = if (testing) File("/Users/jmfayard/Dev/perso/AdventOfCode/kotlin/adventofcode/day7/test.txt")
-            else File("/Users/jmfayard/Dev/perso/AdventOfCode/kotlin/adventofcode/day7/circuit.txt")
-    file.forEachLine {
-        instructions.add(emitLine(it))
+    val file =
+            if (testing) File("kotlin/adventofcode/day7/test.txt")
+            else File("kotlin/adventofcode/day7/circuit.txt")
+
+    file.forEachLine { line ->
+        if (line.isNotBlank())
+            instructions.add(emitLine(line.trim()))
     }
     println("\n== Lexer ==")
     println(instructions.joinToString(separator = "\n"))

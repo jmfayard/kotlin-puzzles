@@ -9,7 +9,7 @@ import kotlin.text.Regex
 val lights : MutableList<MutableList<Boolean>> = initMatrix()
 
 fun main(args: Array<String>) {
-    val file = File("/Users/jmfayard/Dev/perso/AdventOfCode/kotlin/adventofcode/day6/instructions.txt")
+    val file = File("kotlin/adventofcode/day6/instructions.txt")
     file.forEachLine {
         if (regexp.matches(it)) {
             applyInstruction(it)

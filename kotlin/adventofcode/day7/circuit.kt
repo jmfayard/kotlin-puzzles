@@ -1,2 +1,0 @@
-import adventofcode.day7.*
-
