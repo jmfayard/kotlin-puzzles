@@ -282,7 +282,8 @@ class Circuit {
             }
 
             if (sorted == previouslySorted) {
-                errors.add(ParserError("Acyclic graph, size=${list.size} sorted=${previouslySorted}"))
+                val unresolvedKeys = list.filter { it.alreadyOrdered() == false }.map { it.key }
+                errors.add(ParserError("Cyclic graph with keys=$unresolvedKeys"))
                 return errors
 
             }
