@@ -14,32 +14,12 @@ fun main(args: Array<String>) {
     println("Found $result in ${timer.duration()}")
 }
 
-fun <T> List<T>.allArrangements() : Sequence<List<T>> = when {
-    isEmpty() -> emptySequence<List<T>>()
-    size == 1 -> sequenceOf(listOf(first()), emptyList())
-    else -> {
-        val combinaisons = (this - first()).allArrangements().iterator()
-        var withMe  = true
-        var head : List<T>
+fun <T> List<T>.allArrangements() : Sequence<List<T>> =
+        if (isEmpty()) sequenceOf(emptyList())
+        else  (this - first())
+            .allArrangements()
+            .flatMap { list -> sequenceOf(list, list + first()) }
 
-        fun nextArrangement() : List<T>? {
-            if (withMe && !combinaisons.hasNext()) {
-                return null
-            } else if (withMe) {
-                head = combinaisons.next()
-                // alternate between the result withMe and withoutMe
-                withMe = false
-                return head + first()
-
-            } else {
-                withMe = true
-                return head
-            }
-        }
-
-        sequence { nextArrangement() }
-    }
-}
 
 @Test
 class Day17 {
