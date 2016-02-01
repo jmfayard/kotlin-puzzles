@@ -41,19 +41,21 @@ fun main(args: Array<String>) {
     }
     println(config.relations)
 
-    val timer = Timer()
+    val timer = MyTimer()
     val max = config.permutations().maxBy { order ->
         config.happinness(order)
     } as List<Int>
 
     val happinness = config.happinness(max)
     val positions = max.map { i -> config.names[i] }
-    println("happinness=$happinness for positions = $positions ${timer.duration()}")
+    println("happinness=$happinness for positions = $positions ${timer}")
 
 }
 
-class Timer() {
-    var start = System.currentTimeMillis()
-    fun duration() : String = "(${System.currentTimeMillis() - start} ms)"
+class MyTimer() {
+    var  start: Long
+    init { start  = System.currentTimeMillis() }
+    fun reset() { start = System.currentTimeMillis() }
+    override fun toString(): String = "(${System.currentTimeMillis() - start} ms)"
 }
 

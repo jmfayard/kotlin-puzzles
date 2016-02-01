@@ -1,17 +1,17 @@
 package adventofcode.day17
 
-import adventofcode.day13.Timer
+import adventofcode.day13.MyTimer
 import euler.iterators.permutations
 import org.testng.annotations.Test
 
 val containers = listOf(50, 44, 11, 49, 42, 46, 18, 32, 26, 40, 21, 7, 18, 43, 10, 47, 36, 24, 22, 40)
 
 fun main(args: Array<String>) {
-    val timer = Timer()
+    val timer = MyTimer()
     val result = containers.allArrangements()
         .filter { it.sum() == 150 }
         .count()
-    println("Found $result in ${timer.duration()}")
+    println("Found $result in ${timer}")
 }
 
 fun <T> List<T>.allArrangements() : Sequence<List<T>> =

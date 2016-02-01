@@ -1,6 +1,6 @@
 package adventofcode.day14
 
-import adventofcode.day13.Timer
+import adventofcode.day13.MyTimer
 import org.testng.annotations.Test
 import java.io.File
 import java.util.*
@@ -11,7 +11,7 @@ val filename = if (testing) "kotlin/adventofcode/day14/example.txt" else "kotlin
 val timeout = if (testing) 1000 else 2503
 
 fun main(args: Array<String>) {
-    val timer = Timer()
+    val timer = MyTimer()
 
     val list = ArrayList<Reindeer>()
     File(filename).forEachLine { line ->
@@ -26,7 +26,7 @@ fun main(args: Array<String>) {
     list.zip(runs).forEach { pair ->
         println("Reinder ${pair.first.name} did run ${pair.second.lenght}")
     }
-    println("Done ${timer.duration()}")
+    println("Done ${timer}")
 
 }
 
